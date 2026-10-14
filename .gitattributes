@@ -1,0 +1,17 @@
+# テキストファイルは自動判定した上で、リポジトリ内ではLFに統一する
+# （Windows/Mac/Linux間での改行コード差分ノイズを防止する）
+* text=auto eol=lf
+
+# 明示的にテキスト扱いする拡張子
+*.ps1  text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+# バイナリファイル（改行コード変換・テキストとしてのdiffを行わない）
+*.zip  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary

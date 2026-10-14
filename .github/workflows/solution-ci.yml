@@ -1,0 +1,81 @@
+name: Power Automate Solution CI/CD
+
+# このワークフローは雛形(例)です。実際のシークレット・環境名・ソリューション名に置き換えてください。
+#
+# 想定フロー:
+#   1. PR作成時: solutions/src 配下の変更を Unmanaged solution として pack できるか検証する (build-check)
+#   2. main へのマージ後、手動トリガー(workflow_dispatch)で Managed solution を pack し、
+#      Sandbox/Production へ import する (deploy)
+#
+# 認証は Azure AD アプリ登録(サービスプリンシパル)を前提とし、以下のRepository Secretsを使用する。
+#   - POWER_PLATFORM_SP_APP_ID
+#   - POWER_PLATFORM_SP_CLIENT_SECRET
+#   - POWER_PLATFORM_TENANT_ID
+
+on:
+  pull_request:
+    paths:
+      - "solutions/src/**"
+  workflow_dispatch:
+    inputs:
+      solution_name:
+        description: "ソリューションのユニーク名"
+        required: true
+      target_environment_url:
+        description: "import先環境のURL (例: https://yourorg.crm.dynamics.com)"
+        required: true
+      package_type:
+        description: "Managed または Unmanaged"
+        required: true
+        default: "Managed"
+
+jobs:
+  build-check:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Power Platform CLI
+        run: dotnet tool install --global Microsoft.PowerApps.CLI.Tool
+
+      - name: Pack solution (validation only, Unmanaged)
+        shell: pwsh
+        run: |
+          Get-ChildItem solutions/src -Directory | ForEach-Object {
+            ./scripts/pack-solution.ps1 -SolutionName $_.Name -PackageType Unmanaged
+          }
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    environment: ${{ github.event.inputs.target_environment_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Power Platform CLI
+        run: dotnet tool install --global Microsoft.PowerApps.CLI.Tool
+
+      - name: Authenticate
+        shell: pwsh
+        run: |
+          pac auth create `
+            --applicationId ${{ secrets.POWER_PLATFORM_SP_APP_ID }} `
+            --clientSecret ${{ secrets.POWER_PLATFORM_SP_CLIENT_SECRET }} `
+            --tenant ${{ secrets.POWER_PLATFORM_TENANT_ID }} `
+            --environment ${{ github.event.inputs.target_environment_url }}
+
+      - name: Pack solution
+        shell: pwsh
+        run: |
+          ./scripts/pack-solution.ps1 `
+            -SolutionName "${{ github.event.inputs.solution_name }}" `
+            -PackageType "${{ github.event.inputs.package_type }}"
+
+      - name: Import solution
+        shell: pwsh
+        run: |
+          $suffix = if ("${{ github.event.inputs.package_type }}" -eq "Managed") { "_managed" } else { "" }
+          ./scripts/import-solution.ps1 `
+            -ZipPath "solutions/build/${{ github.event.inputs.solution_name }}$suffix.zip" `
+            -EnvironmentUrl "${{ github.event.inputs.target_environment_url }}"

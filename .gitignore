@@ -1,0 +1,22 @@
+# Power Automate開発でよく一時生成されるファイルを除外
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# ローカルのエクスポート作業用一時ファイル
+src/flows/*.tmp.json
+
+# ソリューションのビルド成果物(zip)。ソース管理対象は solutions/src/ 配下のunpack済みXML等のみ
+solutions/build/*.zip
+
+# 環境変数値ファイル(pac solution import --settings-file用)は秘密情報(APIキー等)を
+# 含み得るため除外する。プレースホルダのみのサンプルは *.settings.sample.json として
+# 別名でコミットすること（standards/docs/solution-management-standard.md 2.4参照）
+*.settings.json
+!*.settings.sample.json
+
+# 対象環境情報(Environment ID・URL等)を記入した実ファイルは除外する。
+# サンプル(docs/environments.sample.md)のみをコミットし、実際の値はコピーして
+# docs/environments.md に記入する（コミット対象外）
+docs/environments.md
