@@ -51,6 +51,8 @@ power-automate-project-template/
 │   └── build/                      # pac solution pack の出力(.zip、git管理外)
 ├── src/
 │   └── flows/                     # FlowAgent MCPでエクスポートしたフロー定義(JSON)のローカル控え
+├── templates/
+│   └── test-evidence-template.xlsx # テスト証跡Excelのひな形(standards/docs/testing-standard.md 5章準拠)
 ├── .gitmodules                     # standards submoduleの参照先定義
 └── standards/                     # Power Automate開発標準（Git submodule、実体は別リポジトリ）
     ├── docs/
@@ -67,7 +69,7 @@ power-automate-project-template/
 `standards/` の実体は [power-automate-standards](https://github.com/yukuma236/power-automate-standards)
 リポジトリであり、本テンプレートはそこへの参照（submodule）のみを保持します。
 
-**現在参照しているバージョン：`v1.13.0`**（[CHANGELOG](https://github.com/yukuma236/power-automate-standards/blob/main/CHANGELOG.md)参照）
+**現在参照しているバージョン：`v1.14.0`**（[CHANGELOG](https://github.com/yukuma236/power-automate-standards/blob/main/CHANGELOG.md)参照）
 
 standardsを更新する場合は、最新コミットではなく特定のタグへ明示的に固定してください。
 
@@ -116,3 +118,19 @@ FlowAgent MCPの `get_flow` でエクスポートしたローカル控え（解�
 [`standards/docs/solution-management-standard.md`](./standards/docs/solution-management-standard.md)
 を参照してください。環境変数値ファイル（`*.settings.json`）やCI/CD実行用資格情報など、
 秘密情報の扱いは同文書「2.4 秘密情報管理」を参照してください。
+
+## テスト証跡（Excel）
+
+新しいテストケースのExcel証跡を作成する際は、`docs/test-evidence/`配下の過去の実例ではなく、
+必ず [`templates/test-evidence-template.xlsx`](./templates/test-evidence-template.xlsx) を
+コピーして使用してください。[`standards/docs/testing-standard.md`](./standards/docs/testing-standard.md)
+5章「Excel証跡のディシジョンテーブル形式」に準拠した、未記入のひな形です。
+
+- **Test Spec**：対象フローの概要
+- **Test Case**：Input条件×データパターンのディシジョンテーブル形式（期待結果・実績・判定・
+  MC/DCによるパターン絞り込みの備考欄を含む）
+- **エビデンス詳細**：Test Caseの「期待結果」全項目について、実行前後の実績値とOK/NG判定を
+  1項目1行で記録する形式
+
+作成済みのサンプルは `docs/test-evidence/` 配下を参照してください（これらは実データが入った
+完成例であり、ひな形としてコピーする対象ではありません）。
