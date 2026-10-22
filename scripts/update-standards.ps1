@@ -1,4 +1,5 @@
-Write-Host "Initializing Git submodules (standards)..."
+Write-Host "Initializing/updating Git submodules to the commits pinned by this repository..."
+Write-Host "This does not select or update to the latest standards release."
 
 git submodule update --init --recursive
 
@@ -7,4 +8,4 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-Write-Host "standards/ submodule is up to date."
+Write-Host "standards/ is at the commit pinned by this repository."
