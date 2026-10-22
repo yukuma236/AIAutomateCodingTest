@@ -7,8 +7,9 @@ This project uses development standards located in the `standards/` directory.
 `standards/` is a Git submodule that references the
 [power-automate-standards](https://github.com/yukuma236/power-automate-standards) repository,
 pinned to a specific tagged release (see `README.md` for the current pinned version).
-If `standards/` appears empty or stale, run `./scripts/update-standards.ps1`
-(or `git submodule update --init --recursive`) before relying on it.
+If `standards/` is empty or does not match the commit pinned by this repository, run
+`.\scripts\update-standards.ps1` (or `git submodule update --init --recursive`) before relying on it.
+This retrieves the pinned commit; it does not advance to a newer release.
 
 Use `standards/docs/README.md` as the entry point for development standards.
 
@@ -59,6 +60,12 @@ For non-trivial development tasks, use the following workflow in order:
 Use the corresponding reusable prompt files under `.github/prompts/` for each phase unless the user explicitly requests a different workflow.
 
 For non-trivial development tasks, do not begin implementation before completing the Research and Plan phases.
+
+Treat each phase as an approval boundary: Research establishes and records business behavior; Plan translates approved behavior into an implementation and test approach; Implement follows only the approved plan. Carry the Research handoff, specifications, approved plan, and test artifacts forward as repository documents so a new chat does not depend on an earlier chat transcript. Do not proceed across a boundary when the required approval is missing.
+
+When starting from a business description, reuse existing project documents and create the BFC from business requirements, not from a data model alone. A data model supports field/type/relationship facts but does not establish business rules. Keep BFC (business activities, use cases, and functions), per-flow processing specifications (business behavior), data models, and test specifications/cases as distinct artifacts. Follow the shared standard's artifact order; propose feature-ID candidates with evidence, but do not present them as formally assigned until confirmed.
+
+Keep processing specifications focused on what a flow does. Capture notification, response, and failure behavior as business-visible outputs where relevant; keep technical construction and test details in their respective artifacts. Do not infer expected results from implementation behavior or assume notification commonization without an explicit approved requirement.
 
 ## Power Automate Cloud Flows Source of Truth
 

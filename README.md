@@ -25,7 +25,7 @@ AI支援開発を前提としています。
    ```powershell
    git clone --recurse-submodules <新規リポジトリURL>
    # 既にcloneしてしまい standards/ が空の場合
-   ./scripts/update-standards.ps1
+   .\scripts\update-standards.ps1
    ```
 
 ## ディレクトリ構成
@@ -42,7 +42,7 @@ power-automate-project-template/
 │       └── solution-ci.yml        # ソリューションのビルド検証・環境デプロイCI/CD雛形
 ├── docs/                          # プロジェクト固有の要件・環境情報
 ├── scripts/
-│   ├── update-standards.ps1       # standards/ submoduleの初期化・更新スクリプト
+│   ├── update-standards.ps1       # standards/ submoduleを親リポジトリの固定コミットへ初期化
 │   ├── export-solution.ps1        # ソリューションのexport・unpack
 │   ├── pack-solution.ps1          # ソリューションのpack(Managed/Unmanaged)
 │   └── import-solution.ps1        # ソリューションの対象環境へのimport
@@ -69,18 +69,25 @@ power-automate-project-template/
 `standards/` の実体は [power-automate-standards](https://github.com/yukuma236/power-automate-standards)
 リポジトリであり、本テンプレートはそこへの参照（submodule）のみを保持します。
 
-**現在参照しているバージョン：`v1.14.0`**（[CHANGELOG](https://github.com/yukuma236/power-automate-standards/blob/main/CHANGELOG.md)参照）
+**現在参照しているバージョン：`v1.15.6`**（[`standards/`のgitlink](https://github.com/yukuma236/AIAutomateCodingTest/tree/main/standards)に対応。詳細は[CHANGELOG](https://github.com/yukuma236/power-automate-standards/blob/v1.15.6/CHANGELOG.md)参照）
 
-standardsを更新する場合は、最新コミットではなく特定のタグへ明示的に固定してください。
+`.\scripts\update-standards.ps1` は、現在の親リポジトリに記録されたgitlinkのコミットを初期化・取得するだけです。`standards/` を最新リリースへ自動更新するスクリプトではありません。
+
+標準の取得とバージョン更新を区別してください。
+
+- 新規clone後、または空のsubmoduleを初期化するとき：`.\scripts\update-standards.ps1` を実行します。親リポジトリが記録した固定コミットが取得されます。
+- バージョン更新を承認して行うとき：まず変更内容と影響を確認し、明示したタグへ切り替えたうえで親リポジトリのgitlinkをコミットします。`main` の最新コミットへ追随させないでください。
 
 ```powershell
 cd standards
 git fetch --tags
-git checkout <新しいタグ>
+git checkout <承認した新しいタグ>
 cd ..
 git add standards
-git commit -m "standards: pin to <新しいタグ>"
+git commit -m "standards: pin to <承認した新しいタグ>"
 ```
+
+READMEのバージョン表記は、`standards/` のgitlinkが指すコミットのCHANGELOGに記載されたタグと一致させてください。
 
 ### standardsの更新を検知する方法
 
@@ -105,6 +112,26 @@ FlowAgent MCPの `get_flow` でエクスポートしたローカル控え（解�
 1. Research（`1_task-research.prompt.md`）
 2. Plan（`2_task-plan.prompt.md`）
 3. Implement and Validate（`3_task-implement.prompt.md`）
+
+各工程の出力は、関連するプロジェクト文書として保存し、次のチャットではそのファイルパスと承認状態を明示して引き継ぎます。会話履歴だけに依存しないでください。Researchで業務仕様を確認・承認し、Planを承認してからImplementへ進みます。
+
+これらの`.prompt.md`はリポジトリに置かれた再利用可能なプロンプト文書です。インストール済みSkillや特定のスラッシュコマンドとして扱わず、使用する工程のファイルを開いて内容をCLIまたはVS Codeのチャットに与えてください。PowerShellでは例として次のように内容を表示できます。
+
+```powershell
+Get-Content .github/prompts/1_task-research.prompt.md
+```
+
+Researchの最初の入力例：
+
+```text
+業務概要：申請を受け付け、条件に応じて担当者へ通知する。
+既存資料：docs/requirements.md、docs/data-model.md
+依頼：既存資料を再利用してResearchを開始し、確定事項と業務動作に影響する未決事項を分けてください。データモデルから業務ルールを推測確定せず、実装は始めないでください。
+```
+
+通知要件の整理には、任意の入力票[`docs/templates/notification-input-template.md`](./docs/templates/notification-input-template.md)を利用できます。全フローに通知を要求するものではありません。
+
+テンプレート側のプロンプト／ガイド変更は、[power-automate-project-template commit `72da0bf6347f62d5888323efe30987bc56a01afe`](https://github.com/yukuma236/power-automate-project-template/commit/72da0bf6347f62d5888323efe30987bc56a01afe)を出典として、本プロジェクト固有の説明を保ちながら取り込んでいます。
 
 ## 開発標準
 
